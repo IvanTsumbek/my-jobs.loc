@@ -7,6 +7,8 @@ services:
     volumes:
       - ./:/var/www
     working_dir: /var/www
+    ports:
+    - "8000:8000"
 
   mysql:
     image: mysql:8
