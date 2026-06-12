@@ -9,6 +9,8 @@ Route::get('/', function () {
 });
 
 // Route::get('/test', function () {
+//     $a = new RemotiveClient;
+//     dd($a->fetchJobs());
 // });
 
 Route::get('/dashboard', function () {
