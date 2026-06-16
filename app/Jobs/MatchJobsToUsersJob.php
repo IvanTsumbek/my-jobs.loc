@@ -16,17 +16,18 @@ class MatchJobsToUsersJob implements ShouldQueue
     public function handle(JobMatchingService $matchingService): void
     {
         $preferences = UserPreference::where('is_active', true)->get();
-        $jobs = JobListing::all();
-
-        foreach ($preferences as $preference) {
-            foreach ($jobs as $job) {
-                if ($matchingService->matches($job, $preference)) {
-                    JobMatch::firstOrCreate([
-                        'user_id'        => $preference->user_id,
-                        'job_listing_id' => $job->id,
-                    ]);
+    
+        JobListing::chunk(100, function ($jobs) use ($preferences, $matchingService) {
+            foreach ($preferences as $preference) {
+                foreach ($jobs as $job) {
+                    if ($matchingService->matches($job, $preference)) {
+                        JobMatch::firstOrCreate([
+                            'user_id'        => $preference->user_id,
+                            'job_listing_id' => $job->id,
+                        ]);
+                    }
                 }
             }
-        }
+        });
     }
 }
