@@ -17,5 +17,7 @@ class StoreJobsJob implements ShouldQueue
     {
         $source = JobSource::where('slug', 'remotive')->firstOrFail();
         $saveService->saveMany($this->jobs, $source->id);
+
+        MatchJobsToUsersJob::dispatch();
     }
 }
