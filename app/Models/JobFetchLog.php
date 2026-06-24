@@ -28,3 +28,5 @@ class JobFetchLog extends Model
         return $this->belongsTo(JobSource::class);
     }
 }
+
+
