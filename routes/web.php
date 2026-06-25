@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserPreferenceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,10 +20,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::get('preferences', [UserPreferenceController::class, 'show']);
-    Route::post('preferences', [UserPreferenceController::class, 'upsert']);
-    Route::delete('preferences', [UserPreferenceController::class, 'destroy']);
 });
 
 require __DIR__ . '/auth.php';
