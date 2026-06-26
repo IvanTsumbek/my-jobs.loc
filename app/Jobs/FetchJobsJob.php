@@ -8,6 +8,7 @@ use App\Models\JobFetchLog;
 use App\Models\JobSource;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class FetchJobsJob implements ShouldQueue
 {
@@ -34,6 +35,12 @@ class FetchJobsJob implements ShouldQueue
                 'finished_at'      => now(),
             ]);
 
+            Log::info('FetchJobsJob completed', [
+                'source'        => $source->slug,
+                'items_fetched' => count($jobs),
+                'response_ms'   => (int) ((microtime(true) - $start) * 1000),
+            ]);
+
             NormalizeJobsJob::dispatch($jobs);
         } catch (\Throwable $e) {
             JobFetchLog::create([
@@ -44,6 +51,11 @@ class FetchJobsJob implements ShouldQueue
                 'error_message'    => $e->getMessage(),
                 'started_at'       => $startedAt,
                 'finished_at'      => now(),
+            ]);
+
+            Log::error('FetchJobsJob failed', [
+                'source' => $source->slug,
+                'error'  => $e->getMessage(),
             ]);
 
             throw $e;

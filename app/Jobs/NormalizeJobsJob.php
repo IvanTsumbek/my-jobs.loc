@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Services\Normalizers\RemotiveNormalizer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class NormalizeJobsJob implements ShouldQueue
 {
@@ -17,7 +18,11 @@ class NormalizeJobsJob implements ShouldQueue
 
     public function handle(RemotiveNormalizer $normalizer): void
     {
+        Log::info('NormalizeJobsJob started', ['count' => count($this->jobs)]);
+
         $normalized = $normalizer->normalizeAll($this->jobs);
+
+        Log::info('NormalizeJobsJob completed', ['normalized' => count($normalized)]);
 
         StoreJobsJob::dispatch($normalized);
     }

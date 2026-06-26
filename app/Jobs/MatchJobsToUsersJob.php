@@ -9,6 +9,7 @@ use App\Services\JobMatchingService;
 use App\Services\NotificationDispatcherService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class MatchJobsToUsersJob implements ShouldQueue
 {
@@ -21,7 +22,11 @@ class MatchJobsToUsersJob implements ShouldQueue
     {
         $preferences = UserPreference::where('is_active', true)->get();
 
-        JobListing::chunk(100, function ($jobs) use ($preferences, $matchingService, $notificationDispatcher) {
+        Log::info('MatchJobsToUsersJob started', ['users' => $preferences->count()]);
+
+        $totalMatches = 0;
+
+        JobListing::chunk(100, function ($jobs) use ($preferences, $matchingService, $notificationDispatcher, &$totalMatches) {
             foreach ($preferences as $preference) {
                 foreach ($jobs as $job) {
                     if ($matchingService->matches($job, $preference)) {
@@ -31,11 +36,14 @@ class MatchJobsToUsersJob implements ShouldQueue
                         ]);
 
                         if ($match->wasRecentlyCreated) {
+                            $totalMatches++;
                             $notificationDispatcher->dispatch($preference->user, $job);
                         }
                     }
                 }
             }
         });
+
+        Log::info('MatchJobsToUsersJob completed', ['new_matches' => $totalMatches]);
     }
 }
