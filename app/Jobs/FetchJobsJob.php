@@ -13,6 +13,9 @@ class FetchJobsJob implements ShouldQueue
 {
     use Queueable;
 
+    public int $tries = 3;
+    public int $backoff = 60;
+
     public function handle(RemotiveClient $client): void
     {
         $source = JobSource::where('slug', 'remotive')->firstOrFail();
@@ -32,7 +35,6 @@ class FetchJobsJob implements ShouldQueue
             ]);
 
             NormalizeJobsJob::dispatch($jobs);
-
         } catch (\Throwable $e) {
             JobFetchLog::create([
                 'job_source_id'    => $source->id,
