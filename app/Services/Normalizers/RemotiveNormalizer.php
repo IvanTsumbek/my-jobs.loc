@@ -14,20 +14,24 @@ class RemotiveNormalizer
     {
         $salary = $this->salaryParser->parse($job['salary'] ?? null);
 
+        $url = filter_var($job['url'] ?? '', FILTER_VALIDATE_URL)
+            ? $job['url']
+            : null;
+    
         return [
-            'external_id'     => (string) $job['id'],
-            'external_url'    => $job['url'],
-            'url'             => $job['url'],
-            'title'           => $job['title'],
-            'company'         => $job['company_name'],
+            'external_id'     => (string) ($job['id'] ?? uniqid('remotive_')),
+            'external_url'    => $url,
+            'url'             => $url,
+            'title'           => trim($job['title'] ?? 'Unknown'),
+            'company'         => trim($job['company_name'] ?? 'Unknown'),
             'description'     => $job['description'] ?? null,
             'location'        => $job['candidate_required_location'] ?? null,
             'is_remote'       => true,
             'category'        => $job['category'] ?? null,
             'employment_type' => $job['job_type'] ?? null,
-            'tags'            => $job['tags'] ?? [],
+            'tags'            => is_array($job['tags'] ?? null) ? $job['tags'] : [],
             'published_at'    => $job['publication_date'] ?? null,
-            'hash'            => md5((string) $job['id'] . 'remotive'),
+            'hash'            => md5((string) ($job['id'] ?? uniqid()) . 'remotive'),
             'salary_min'      => $salary['salary_min'],
             'salary_max'      => $salary['salary_max'],
             'salary_currency' => $salary['salary_currency'],
