@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\TelegramService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class SendTelegramNotificationJob implements ShouldQueue
 {
@@ -22,6 +23,11 @@ class SendTelegramNotificationJob implements ShouldQueue
 
     public function handle(TelegramService $telegramService): void
     {
+        Log::info('SendTelegramNotificationJob started', [
+            'user_id' => $this->user->id,
+            'job_id'  => $this->jobListing->id,
+        ]);
+
         $message = "🆕 <b>New job match!</b>\n\n"
             . "<b>Position:</b> {$this->jobListing->title}\n"
             . "<b>Company:</b> {$this->jobListing->company}\n"
@@ -29,5 +35,10 @@ class SendTelegramNotificationJob implements ShouldQueue
             . "<a href='{$this->jobListing->url}'>View Job</a>";
 
         $telegramService->sendMessage($this->user->telegram_chat_id, $message);
+    
+        Log::info('SendTelegramNotificationJob completed', [
+            'user_id'     => $this->user->id,
+            'telegram_id' => $this->user->telegram_chat_id,
+        ]);
     }
 }
