@@ -20,7 +20,7 @@ class MatchJobsToUsersJob implements ShouldQueue
 
     public function handle(JobMatchingService $matchingService, NotificationDispatcherService $notificationDispatcher): void
     {
-        $preferences = UserPreference::where('is_active', true)->get();
+        $preferences = UserPreference::where('is_active', true)->with('user')->get();
 
         Log::info('MatchJobsToUsersJob started', ['users' => $preferences->count()]);
 

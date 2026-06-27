@@ -17,6 +17,6 @@ class NotificationController extends Controller
             ->latest()
             ->paginate(20);
 
-        return JobResource::collection($matches->pluck('jobListing'));
+        return JobResource::collection($matches->map(fn($match) => $match->jobListing));
     }
 }
