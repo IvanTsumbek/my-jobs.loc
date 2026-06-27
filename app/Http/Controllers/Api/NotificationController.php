@@ -4,19 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\JobResource;
-use App\Models\JobMatch;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class NotificationController extends Controller
 {
+    public function __construct(private NotificationService $notificationService) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
-        $matches = JobMatch::where('user_id', $request->user()->id)
-            ->with('jobListing')
-            ->latest()
-            ->paginate(20);
+        $matches = $this->notificationService->getForUser($request->user()->id, 15);
 
-        return JobResource::collection($matches->map(fn($match) => $match->jobListing));
+        return JobResource::collection($matches->through(fn($match) => $match->jobListing));
     }
 }
