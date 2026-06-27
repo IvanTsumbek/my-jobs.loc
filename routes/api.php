@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\JobController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\UserPreferenceController;
+use App\Http\Controllers\Api\UserPreferenceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('jobs', [JobController::class, 'index']);
