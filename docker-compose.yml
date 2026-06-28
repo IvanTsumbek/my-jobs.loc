@@ -27,11 +27,16 @@ services:
       MYSQL_DATABASE: my_jobs.loc
     ports:
       - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
   redis:
     image: redis:7
     container_name: laravel_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   horizon:
     build:
@@ -46,3 +51,21 @@ services:
       - app
       - redis
       - mysql
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: laravel_scheduler
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    depends_on:
+      - app
+      - redis
+      - mysql
+
+volumes:
+  mysql_data:
+  redis_data:
