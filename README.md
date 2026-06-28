@@ -1,58 +1,217 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MyJobs 🚀
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A mini SaaS backend system for aggregating remote job listings, matching them to user preferences, and delivering notifications via Email and Telegram.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Job Aggregation** — fetches remote jobs from external APIs (Remotive)
+- **Data Normalization** — unified format regardless of source
+- **Deduplication** — hash-based, no duplicate jobs in DB
+- **User Preferences** — skills, location, categories, salary range
+- **Matching Engine** — compares jobs against user preferences
+- **Notifications** — Email (Mailtrap/SMTP) and Telegram Bot
+- **Async Pipeline** — fully queue-based processing via Laravel Horizon
+- **Scheduler** — automated fetching every 30 minutes
+- **Logging** — structured logs for every pipeline stage
+- **API** — RESTful JSON API with pagination and auth
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Layer | Technology |
+|---|---|
+| Framework | Laravel 13 |
+| Queue | Redis + Laravel Horizon |
+| Database | MySQL 8 |
+| Cache | Redis |
+| Auth | Laravel Sanctum + Breeze |
+| Notifications | Mailtrap (dev), Telegram Bot API |
+| Infrastructure | Docker, Nginx, PHP-FPM |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Architecture
 
-## Agentic Development
+### Pipeline Flow
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Scheduler (every 30 min)
+        ↓
+FetchJobsJob       — fetch raw data from Remotive API
+        ↓
+NormalizeJobsJob   — normalize to unified format + parse salary
+        ↓
+StoreJobsJob       — deduplicate by hash, save to DB
+        ↓
+MatchJobsToUsersJob — match jobs against user preferences
+        ↓
+NotificationDispatcherService
+    ├── SendEmailNotificationJob
+    └── SendTelegramNotificationJob
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Services Layer
 
-## Contributing
+```
+app/
+├── Integrations/
+│   └── RemotiveClient.php         — HTTP client for Remotive API
+├── Services/
+│   ├── Normalizers/
+│   │   └── RemotiveNormalizer.php — maps API response to DB format
+│   ├── SalaryParserService.php    — parses salary strings to min/max integers
+│   ├── JobSaveService.php         — deduplication + save logic
+│   ├── JobMatchingService.php     — matches job vs user preferences
+│   ├── NotificationDispatcherService.php — routes notifications to channels
+│   ├── JobService.php             — job listing queries
+│   ├── NotificationService.php    — notification history queries
+│   └── UserPreferenceService.php  — user preferences CRUD
+├── Repositories/
+│   └── JobRepository.php          — DB operations for job listings
+└── Jobs/
+    ├── FetchJobsJob.php
+    ├── NormalizeJobsJob.php
+    ├── StoreJobsJob.php
+    ├── MatchJobsToUsersJob.php
+    ├── SendEmailNotificationJob.php
+    └── SendTelegramNotificationJob.php
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Installation
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Requirements
 
-## Security Vulnerabilities
+- Docker
+- Docker Compose
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Steps
+
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd myjobs
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Start containers
+docker compose up -d
+
+# 4. Install dependencies
+docker exec -it laravel_app composer install
+
+# 5. Generate app key
+docker exec -it laravel_app php artisan key:generate
+
+# 6. Run migrations and seeders
+docker exec -it laravel_app php artisan migrate --seed
+
+# 7. Open in browser
+http://localhost:8000
+```
+
+### Environment Variables
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=my_jobs.loc
+DB_USERNAME=root
+DB_PASSWORD=root
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+
+TELEGRAM_BOT_TOKEN=your_bot_token
+```
+
+---
+
+## API Endpoints
+
+### Public
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/jobs` | List all jobs (paginated) |
+
+### Authenticated (Bearer Token)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/preferences` | Get user preferences |
+| POST | `/api/preferences` | Create or update preferences |
+| DELETE | `/api/preferences` | Delete preferences |
+| GET | `/api/notifications` | Get matched jobs history |
+
+### Preferences Payload
+
+```json
+{
+    "keywords": ["PHP", "Laravel"],
+    "locations": ["remote", "EU"],
+    "categories": ["Software Development"],
+    "salary_min": 50000,
+    "salary_max": 150000,
+    "remote_only": true,
+    "frequency": "daily"
+}
+```
+
+---
+
+## Queue & Scheduler
+
+### Run manually
+
+```bash
+# Fetch and process jobs
+docker exec -it laravel_app php artisan jobs:fetch
+
+# Test matching for a user
+docker exec -it laravel_app php artisan jobs:match-test 1
+```
+
+### Horizon Dashboard
+
+```
+http://localhost:8000/horizon
+```
+
+### Scheduler
+
+Runs automatically every 30 minutes via the `scheduler` Docker container.
+To check scheduled tasks:
+
+```bash
+docker exec -it laravel_app php artisan schedule:list
+```
+
+---
+
+## Database Schema
+
+| Table | Description |
+|---|---|
+| `users` | Auth users with optional telegram_chat_id |
+| `job_listings` | Normalized job data from all sources |
+| `job_sources` | External API sources (Remotive, etc.) |
+| `job_matches` | Matched jobs per user |
+| `user_preferences` | User filter preferences |
+| `job_fetch_logs` | Pipeline execution logs |
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT
