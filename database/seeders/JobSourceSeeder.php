@@ -13,7 +13,7 @@ class JobSourceSeeder extends Seeder
      */
     public function run(): void
     {
-        JobSource::insert([
+        JobSource::insertOrIgnore([
             [
                 'name'       => 'DOU',
                 'slug'       => 'dou',
