@@ -9,7 +9,14 @@ class JobController extends Controller
 {
     public function index(Request $request)
     {
-        $jobs = JobListing::latest()->paginate(20);
+        $jobs = JobListing::query()
+            ->when($request->search, fn($q) => $q->where('title', 'like', "%{$request->search}%")
+                ->orWhere('company', 'like', "%{$request->search}%"))
+            ->when($request->location, fn($q) => $q->where('location', 'like', "%{$request->location}%"))
+            ->when($request->remote, fn($q) => $q->where('is_remote', true))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
         return view('jobs.index', compact('jobs'));
     }
