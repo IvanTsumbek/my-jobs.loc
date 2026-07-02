@@ -16,9 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
     Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
     Route::get('/preferences',  [PreferenceController::class, 'index'])->name('preferences.index');
+    Route::post('/preferences', [PreferenceController::class, 'save'])->name('preferences.save');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
