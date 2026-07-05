@@ -13,7 +13,8 @@
             @endif
 
             <x-card>
-                <form method="POST" action="{{ route('preferences.save') }}">
+                <form method="POST" action="{{ route('preferences.save') }}" x-data="{ loading: false }"
+                    @submit="loading = true">
                     @csrf
 
                     <div class="mb-6">
@@ -95,7 +96,17 @@
                         </label>
                     </div>
 
-                    <x-button type="submit">Save Preferences</x-button>
+                    <x-button type="submit" x-bind:disabled="loading">
+                        <span x-show="!loading">Save Preferences</span>
+                        <span x-show="loading" class="flex items-center gap-2">
+                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                            </svg>
+                            Saving...
+                        </span>
+                    </x-button>
+                    
                 </form>
             </x-card>
 

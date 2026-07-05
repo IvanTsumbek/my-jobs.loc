@@ -8,7 +8,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <form method="GET" action="{{ route('jobs.index') }}" class="mb-6">
+            <form method="GET" action="{{ route('jobs.index') }}" class="mb-6" x-data="{ loading: false }" @submit="loading = true">
                 <x-card>
                     <div class="flex flex-wrap gap-4 items-end">
                         <div class="flex-1 min-w-[200px]">
@@ -33,13 +33,23 @@
                         </div>
             
                         <div class="flex gap-2">
-                            <x-button type="submit">Filter</x-button>
+                            <x-button type="submit" x-bind:disabled="loading">
+                                <span x-show="!loading">Filter</span>
+                                <span x-show="loading" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                                    </svg>
+                                    Loading...
+                                </span>
+                            </x-button>
                             @if(request()->anyFilled(['search', 'location', 'remote']))
                                 <a href="{{ route('jobs.index') }}">
                                     <x-button class="bg-gray-400 hover:bg-gray-500">Clear</x-button>
                                 </a>
                             @endif
                         </div>
+
                     </div>
                 </x-card>
             </form>
