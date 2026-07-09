@@ -39,25 +39,8 @@
                                         </a>
                                         <p class="text-gray-600 mt-1">{{ $match->jobListing->company }}</p>
 
-                                        <div class="flex flex-wrap gap-2 mt-3">
-                                            @if($match->jobListing->location)
-                                                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                                                    📍 {{ $match->jobListing->location }}
-                                                </span>
-                                            @endif
-
-                                            @if($match->jobListing->is_remote)
-                                                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
-                                                    🌍 Remote
-                                                </span>
-                                            @endif
-
-                                            @if($match->jobListing->salary_min)
-                                                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                                                    💰 ${{ number_format($match->jobListing->salary_min) }}{{ $match->jobListing->salary_max ? ' - $' . number_format($match->jobListing->salary_max) : '+' }}
-                                                </span>
-                                            @endif
-                                        </div>
+                                       <x-job-badges :job="$match->jobListing" />
+                                        
                                     </div>
 
                                     <a href="{{ $match->jobListing->url }}" target="_blank"

@@ -69,41 +69,10 @@
                                     </a>
                                     <p class="text-gray-600 mt-1">{{ $job->company }}</p>
 
-                                    <div class="flex flex-wrap gap-2 mt-3">
-                                        @if($job->location)
-                                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                                                📍 {{ $job->location }}
-                                            </span>
-                                        @endif
+                                    <x-job-badges :job="$job" />
 
-                                        @if($job->is_remote)
-                                            <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
-                                                🌍 Remote
-                                            </span>
-                                        @endif
+                                    <x-job-tags :tags="$job->tags" />
 
-                                        @if($job->employment_type)
-                                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                                {{ $job->employment_type }}
-                                            </span>
-                                        @endif
-
-                                        @if($job->salary_min)
-                                            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-                                                💰 ${{ number_format($job->salary_min) }}{{ $job->salary_max ? ' - $' . number_format($job->salary_max) : '+' }}
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    @if($job->tags)
-                                        <div class="flex flex-wrap gap-1 mt-2">
-                                            @foreach(array_slice($job->tags, 0, 5) as $tag)
-                                                <span class="text-xs bg-gray-50 border border-gray-200 text-gray-500 px-2 py-0.5 rounded">
-                                                    {{ $tag }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @endif
                                 </div>
 
                                 <div class="text-xs text-gray-400 ml-4 shrink-0">
